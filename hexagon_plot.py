@@ -4,6 +4,22 @@ import matplotlib.pyplot as plt
 # from matplotlib.animation import FuncAnimation
 from PIL import Image
 
+# 辅助函数，将matplotlib的figure对象转换为PIL的Image对象
+def fig2img(fig):
+    fig.canvas.draw()
+    buf = fig.canvas.buffer_rgba()
+    w,h = fig.canvas.get_width_height()
+    img = Image.frombytes("RGBA", (w,h), buf)
+    img = img.convert('RGB')
+    return img
+
+# 辅助函数，保存gif图片
+def save_gif(images, filename, duration):
+    frames = []
+    for img in images:
+        frames.append(img)
+    images[0].save(filename, format='GIF', append_images=frames[1:], save_all=True, duration=duration, loop=0)
+    
 # 定义参数
 rc = 6
 dy = 2 * rc
@@ -14,7 +30,6 @@ num = 0
 # 用于存储每个六边形的中心坐标
 centers = []
 
-
 # 画图
 fig, ax = plt.subplots()
 
@@ -24,17 +39,15 @@ ax.set_ylim(-50, 50)  # 设置y轴范围
 ax.set_aspect('equal')  # 设置坐标轴比例相等
 ax.axis('off')  # 关闭坐标轴
 
-# plt.figure(facecolor='w', figsize=(6, 7))  # 创建一个新的图形窗口，并设置背景颜色为白色和大小
-# plt.axis([-45, 45, -50, 50])  # 设置坐标轴范围
-# plt.axis('equal')  # 设置坐标轴比例相等，使得x和y轴的单位长度一致
-# plt.axis('off')  # 关闭坐标轴
-# plt.box(on=True)  # 显示边框
-
 # 读取图片
 sat_red_img = Image.open('sat_red.png')
 sat_red_img_arr = np.array(sat_red_img)
 sat_blue_img = Image.open('sat_blue.png')
 sat_blue_img_arr = np.array(sat_blue_img)
+sat_up_img = Image.open('sat_up.png')
+sat_up_img_arr = np.array(sat_up_img)
+sat_down_img = Image.open('sat_down.png')
+sat_down_img_arr = np.array(sat_down_img)
 
 # 卫星中心坐标比例
 sat_rate = 4
@@ -55,15 +68,6 @@ for yk in np.concatenate((np.arange(0, 101, dy), np.arange(0, -101, -dy))):
         # 存入六边形中心坐标
         center = (xp, yp)
         centers.append(center)
-        # ===================================== #
-        # 在六边形中心插入图片（插进六边形的fig里）#
-        # ===================================== #
-        # sat_red = ax.imshow(sat_red_img, 
-        #                     extent=((xp-sat_rate),
-        #                             (xp+sat_rate),
-        #                             (yp-sat_rate),
-        #                             (yp+sat_rate)), 
-        #                     zorder=3)    # zorder确保图片在最上层
         if center not in drawn_centers and -50 < xp < 50 and -50 < yp < 50:
             T = (xp + 1j * yp) + rc * np.exp(1j * A) * 2 / np.sqrt(3)  # 将点(xp, yp)转换为复数形式，并进行变换
             num += 1
@@ -75,7 +79,6 @@ for yk in np.concatenate((np.arange(0, 101, dy), np.arange(0, -101, -dy))):
             # 记录已绘制的六边形中心坐标
             drawn_centers.add(center)
             print(f'六边形中心坐标：{center}')
-
 # ===================================== #
 #                 绘图结束               #
 # ===================================== #
@@ -93,34 +96,72 @@ x_k_case1 = np.round(attrition_case1.x_k / scaling_index)
 y_d_case1 = np.round(attrition_case1.y_d / scaling_index)
 y_k_case1 = np.round(attrition_case1.y_k / scaling_index)
 
+# 动画完成需要的图片数
+animation_num = len(x_d_case1)
+
+# 初始化gif图片列表
+images = []
+
 # 红蓝方卫星集群数量
-red_num, blue_num = 9, 9
-x_d_num = x_d_case1[0]
-x_k_num = x_k_case1[0]
-y_d_num = y_d_case1[0]
-y_k_num = y_k_case1[0]
+x_d_num0 = int(x_d_case1[0])
+x_k_num0 = int(x_k_case1[0])
+y_d_num0 = int(y_d_case1[0])
+y_k_num0 = int(y_k_case1[0])
 
-# 列出来要画红蓝方卫星的坐标点
-drawn_centers_num = np.random.choice(range(0, len(drawn_centers)), (red_num+blue_num), replace=False)
-drawn_centers_red = drawn_centers_num[0:red_num]                    # 红方卫星坐标点
-drawn_centers_blue = drawn_centers_num[red_num:red_num+blue_num]    # 蓝方卫星坐标点
+drawn_centers_num = np.random.choice(range(0, len(drawn_centers)), (x_d_num0+x_k_num0+y_d_num0+y_k_num0), replace=False)
+drawn_centers_x_d = drawn_centers_num[0 : x_d_num0]                                                     # 红方直瞄群坐标点
+drawn_centers_x_k = drawn_centers_num[x_d_num0 : x_d_num0+x_k_num0]                                     # 红方动能群坐标点
+drawn_centers_y_d = drawn_centers_num[x_d_num0+x_k_num0 : x_d_num0+x_k_num0+y_d_num0]                   # 蓝方直瞄群坐标点
+drawn_centers_y_k = drawn_centers_num[x_d_num0+x_k_num0+y_d_num0 : x_d_num0+x_k_num0+y_d_num0+y_k_num0] # 蓝方动能群坐标点
 
-# 在红方坐标点上画红方卫星图片
-for center_index in drawn_centers_red:
-    xp, yp = drawn_centers_list[center_index]
-    ax.imshow(sat_red_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
+for scenario_num in range(0,animation_num):
+    # 红蓝方卫星集群数量
+    x_d_num = int(x_d_case1[scenario_num])
+    x_k_num = int(x_k_case1[scenario_num])
+    y_d_num = int(y_d_case1[scenario_num])
+    y_k_num = int(y_k_case1[scenario_num])
 
-# 在蓝方坐标点上画蓝方卫星图片
-for center_index in drawn_centers_blue:
-    xp, yp = drawn_centers_list[center_index]
-    ax.imshow(sat_blue_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
+    drawn_centers_num = np.random.choice(range(0, len(drawn_centers)), (x_d_num+x_k_num+y_d_num+y_k_num), replace=False)
+    drawn_centers_x_d = drawn_centers_num[0 : x_d_num]                                                  # 红方直瞄群坐标点
+    drawn_centers_x_k = drawn_centers_num[x_d_num : x_d_num+x_k_num]                                    # 红方动能群坐标点
+    drawn_centers_y_d = drawn_centers_num[x_d_num+x_k_num : x_d_num+x_k_num+y_d_num]                    # 蓝方直瞄群坐标点
+    drawn_centers_y_k = drawn_centers_num[x_d_num+x_k_num+y_d_num : x_d_num+x_k_num+y_d_num+y_k_num]    # 蓝方动能群坐标点
 
+    # 在红方直瞄群坐标点上画卫星
+    for center_index in drawn_centers_x_d:
+        xp, yp = drawn_centers_list[center_index]
+        ax.imshow(sat_red_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
+
+    # 在红方直瞄群坐标点上画卫星
+    for center_index in drawn_centers_x_k:
+        xp, yp = drawn_centers_list[center_index]
+        ax.imshow(sat_red_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
+
+    # 在红方直瞄群坐标点上画卫星
+    for center_index in drawn_centers_y_d:
+        xp, yp = drawn_centers_list[center_index]
+        ax.imshow(sat_blue_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
+
+    # 在红方直瞄群坐标点上画卫星
+    for center_index in drawn_centers_y_k:
+        xp, yp = drawn_centers_list[center_index]
+        ax.imshow(sat_blue_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
+
+    # 保存图片
+    # savefig_str = './img/confronation_scenario_'+str(scenario_num)+'_.jpg'
+    # fig.savefig(savefig_str, dpi=300)
+
+    # 保存每一帧
+    images.append(fig2img(fig))
+
+# 保存为gif
+save_gif(images, 'animation.gif', duration=0.2)
 # ===================================== #
 #                 插入结束               #
 # ===================================== #
 
-# 保存图片
-fig.savefig('confrontation_scenario.png', dpi=300)
+# # 保存图片
+# fig.savefig('confrontation_scenario.png', dpi=300)
 
-# 显示图形
-plt.show()  
+# # 显示图形
+# plt.show()  
