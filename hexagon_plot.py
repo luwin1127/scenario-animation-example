@@ -55,7 +55,6 @@ sat_rate = 4
 # 用于存储已经绘制过的六边形中心坐标
 drawn_centers = set()
 
-
 # ===================================== #
 #                 开始绘图               #
 # ===================================== #
@@ -79,6 +78,7 @@ for yk in np.concatenate((np.arange(0, 101, dy), np.arange(0, -101, -dy))):
             # 记录已绘制的六边形中心坐标
             drawn_centers.add(center)
             print(f'六边形中心坐标：{center}')
+ax.clear()
 # ===================================== #
 #                 绘图结束               #
 # ===================================== #
@@ -115,6 +115,35 @@ drawn_centers_y_d = drawn_centers_num[x_d_num0+x_k_num0 : x_d_num0+x_k_num0+y_d_
 drawn_centers_y_k = drawn_centers_num[x_d_num0+x_k_num0+y_d_num0 : x_d_num0+x_k_num0+y_d_num0+y_k_num0] # 蓝方动能群坐标点
 
 for scenario_num in range(0,animation_num):
+    # 画图
+    fig, ax = plt.subplots()
+    ax.set_facecolor('w')  # 设置背景颜色为白色
+    ax.set_xlim(-45, 45)  # 设置x轴范围
+    ax.set_ylim(-50, 50)  # 设置y轴范围
+    ax.set_aspect('equal')  # 设置坐标轴比例相等
+    ax.axis('off')  # 关闭坐标轴
+
+    # ===================================== #
+    #                 开始绘图               #
+    # ===================================== #
+    for yk in np.concatenate((np.arange(0, 101, dy), np.arange(0, -101, -dy))):
+        # 定义y=f(x)的直线方程
+        def yfun(x): return np.sqrt(3) * x / 3 + yk  
+        for xk in np.concatenate((np.arange(0, 101, dx), np.arange(0, -101, -dx))):
+            xp = xk
+            yp = yfun(xp)
+            
+            if center not in drawn_centers and -50 < xp < 50 and -50 < yp < 50:
+                T = (xp + 1j * yp) + rc * np.exp(1j * A) * 2 / np.sqrt(3)  # 将点(xp, yp)转换为复数形式，并进行变换
+                ax.plot(T.real, T.imag, color=[0.7176, 0.7176, 0.7176], linewidth=1.5)  # 绘制变换后的六边形
+
+
+    # ===================================== #
+    #                 绘图结束               #
+    # ===================================== #
+    # 将已绘制的中心坐标转换为列表
+    drawn_centers_list = list(drawn_centers)
+
     # 红蓝方卫星集群数量
     x_d_num = int(x_d_case1[scenario_num])
     x_k_num = int(x_k_case1[scenario_num])
@@ -148,14 +177,16 @@ for scenario_num in range(0,animation_num):
         ax.imshow(sat_blue_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
 
     # 保存图片
-    # savefig_str = './img/confronation_scenario_'+str(scenario_num)+'_.jpg'
-    # fig.savefig(savefig_str, dpi=300)
+    savefig_str = './img/confronation_scenario_'+str(scenario_num)+'.jpg'
+    fig.savefig(savefig_str, dpi=300)
 
     # 保存每一帧
     images.append(fig2img(fig))
+    ax.clear()
+    plt.close()
 
 # 保存为gif
-save_gif(images, 'animation.gif', duration=0.2)
+save_gif(images, './img/confrontation_scenario_changes.gif', duration=200) # 单位是毫秒 (ms)
 # ===================================== #
 #                 插入结束               #
 # ===================================== #
