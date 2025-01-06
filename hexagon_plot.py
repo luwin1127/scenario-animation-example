@@ -78,7 +78,11 @@ for yk in np.concatenate((np.arange(0, 101, dy), np.arange(0, -101, -dy))):
             # 记录已绘制的六边形中心坐标
             drawn_centers.add(center)
             print(f'六边形中心坐标：{center}')
-ax.clear()
+
+fig.savefig('confrontation_scenario.png', dpi=300)
+
+# 显示图形
+plt.show()  
 # ===================================== #
 #                 绘图结束               #
 # ===================================== #
@@ -109,6 +113,7 @@ y_d_num0 = int(y_d_case1[0])
 y_k_num0 = int(y_k_case1[0])
 
 drawn_centers_num = np.random.choice(range(0, len(drawn_centers)), (x_d_num0+x_k_num0+y_d_num0+y_k_num0), replace=False)
+drawn_centers_num = [0, 6, 50, 62, 64, 23, 37, 19, 2]
 drawn_centers_x_d = drawn_centers_num[0 : x_d_num0]                                                     # 红方直瞄群坐标点
 drawn_centers_x_k = drawn_centers_num[x_d_num0 : x_d_num0+x_k_num0]                                     # 红方动能群坐标点
 drawn_centers_y_d = drawn_centers_num[x_d_num0+x_k_num0 : x_d_num0+x_k_num0+y_d_num0]                   # 蓝方直瞄群坐标点
@@ -136,7 +141,6 @@ for scenario_num in range(0,animation_num):
             if center not in drawn_centers and -50 < xp < 50 and -50 < yp < 50:
                 T = (xp + 1j * yp) + rc * np.exp(1j * A) * 2 / np.sqrt(3)  # 将点(xp, yp)转换为复数形式，并进行变换
                 ax.plot(T.real, T.imag, color=[0.7176, 0.7176, 0.7176], linewidth=1.5)  # 绘制变换后的六边形
-
 
     # ===================================== #
     #                 绘图结束               #
@@ -176,9 +180,9 @@ for scenario_num in range(0,animation_num):
         xp, yp = drawn_centers_list[center_index]
         ax.imshow(sat_blue_img_arr, extent=(xp-sat_rate, xp+sat_rate, yp-sat_rate, yp+sat_rate), zorder=3)
 
-    # 保存图片
-    savefig_str = './img/confronation_scenario_'+str(scenario_num)+'.jpg'
-    fig.savefig(savefig_str, dpi=300)
+    # # 保存图片
+    # savefig_str = './img/confronation_scenario_'+str(scenario_num)+'.jpg'
+    # fig.savefig(savefig_str, dpi=300)
 
     # 保存每一帧
     images.append(fig2img(fig))
@@ -187,12 +191,7 @@ for scenario_num in range(0,animation_num):
 
 # 保存为gif
 save_gif(images, './img/confrontation_scenario_changes.gif', duration=200) # 单位是毫秒 (ms)
+print("--== 画图结束 ==--")
 # ===================================== #
 #                 插入结束               #
 # ===================================== #
-
-# # 保存图片
-# fig.savefig('confrontation_scenario.png', dpi=300)
-
-# # 显示图形
-# plt.show()  
