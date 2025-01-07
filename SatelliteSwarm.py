@@ -227,9 +227,9 @@ if __name__ == '__main__':
         ax.clear()
         plt.close()
 
-# 保存为gif
-save_gif(images, 'confrontation_scenario_changes_single.gif', duration=350) # 单位是毫秒 (ms)
-print("--== 画图结束 ==--")
-# ===================================== #
-#                 插入结束               #
-# ===================================== #
+    # 保存为gif
+    save_gif(images, 'confrontation_scenario_changes_single.gif', duration=350) # 单位是毫秒 (ms)
+    print("--== 画图结束 ==--")
+    # ===================================== #
+    #                 插入结束               #
+    # ===================================== #
