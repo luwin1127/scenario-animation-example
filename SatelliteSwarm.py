@@ -28,6 +28,7 @@ class SatelliteSwarm:
         self.col = col
         self.row = row
         self.update_parity()
+        self.action = 'none'
 
     def update_parity(self):
         temp = np.floor(self.sat_num / 4) + 1 # 每个六边形编号对应的行数 = 向下取整（编号/列数）+1
@@ -39,12 +40,15 @@ class SatelliteSwarm:
     def move_12_clock(self):
         # 更新行数的奇偶性
         self.update_parity()
+        self.action = '12 clock'
         self.sat_num = self.sat_num - 2 * self.col
+
         return self.sat_num
     
     def move_2_clock(self):
         # 更新行数的奇偶性
         self.update_parity()
+        self.action = '2 clock'
         if self.parity == 'odd':
             self.sat_num = self.sat_num - (self.col-1) 
         elif self.parity == 'even':
@@ -55,6 +59,7 @@ class SatelliteSwarm:
     def move_4_clock(self):
         # 更新行数的奇偶性
         self.update_parity()
+        self.action = '4 clock'
         if self.parity == 'odd':
             self.sat_num = self.sat_num + (self.col+1) 
         elif self.parity == 'even':
@@ -65,6 +70,7 @@ class SatelliteSwarm:
     def move_6_clock(self):
         # 更新行数的奇偶性
         self.update_parity()
+        self.action = '6 clock'
         self.sat_num = self.sat_num + 2 * self.col
 
         return self.sat_num
@@ -72,6 +78,7 @@ class SatelliteSwarm:
     def move_8_clock(self):
         # 更新行数的奇偶性
         self.update_parity()
+        self.action = '8 clock'
         if self.parity == 'odd':
             self.sat_num = self.sat_num + self.col
         elif self.parity == 'even':
@@ -82,6 +89,7 @@ class SatelliteSwarm:
     def move_10_clock(self):
         # 更新行数的奇偶性
         self.update_parity()
+        self.action = '10 clock'
         if self.parity == 'odd':
             self.sat_num = self.sat_num - self.col
         elif self.parity == 'even':
@@ -93,25 +101,27 @@ class SatelliteSwarm:
         # 上方边缘的坐标点
         if self.sat_num == 0:   # 左上角
             move_direction = np.random.randint(3,5)
-        elif self.sat_num in np.arange(1, col): # 除了左上角的上方边缘（奇数行）
+        elif self.sat_num in np.arange(1, self.col): # 除了左上角的上方边缘（奇数行）
             move_direction = np.random.randint(3,6)
-        elif self.sat_num in np.arange(col, 2*col-1):   # 除了右上角的上方边缘（偶数行）
+        elif self.sat_num in np.arange(self.col, 2*self.col-1):   # 除了右上角的上方边缘（偶数行）
             move_direction = np.random.randint(2,7)
-        elif self.sat_num == 2*col - 1: # 右上角
+        elif self.sat_num == 2*self.col - 1: # 右上角
             move_direction = np.random.randint(4,7)
         # 右方边缘的坐标点
-        elif self.sat_num in np.arange(2*col-1, (2*col * row/2) - 1, 2*col): # 除了右下角的右方边缘（7被包括进去了，但是没有关系，因为如果self.sat_num=7，就肯定会进入前面的elif()）
+        elif self.sat_num in np.arange(2*self.col-1, (2*self.col * self.row/2) - 1, 2*self.col): # 除了右下角的右方边缘（7被包括进去了，但是没有关系，因为如果self.sat_num=7，就肯定会进入前面的elif()）
             move_direction = np.random.choice([1,4,5,6],1)
-        elif self.sat_num == 2*col * row/2 - 1: # 右下角
+        elif self.sat_num == 2*self.col * self.row/2 - 1:       # 右下角
             move_direction = np.random.choice([1,6],1)
-        # 下方边缘的坐标点
-        elif self.sat_num in np.arange((2*col * row/2) - col, (2*col * row/2) - 1): # 除了右下角的下方边缘（偶数行）
-            move_direction = np.random.choice([1,2,6],1)
         # 左方边缘的坐标点
-        elif self.sat_num in np.arange(0, 2*col * (row/2 - 1), 2*col): # 除了左下角的左方边缘（0被包括进去了，但是没有关系，因为如果self.sat_num=0，就肯定会进入前面的elif()）
+        elif self.sat_num in np.arange(0, 2*self.col * (self.row/2 - 1), 2*self.col): # 除了左下角的左方边缘（0被包括进去了，但是没有关系，因为如果self.sat_num=0，就肯定会进入前面的elif()）
             move_direction = np.random.randint(1,5)
-        elif self.sat_num == 2*col * (row/2 - 1):   # 左下角
+        elif self.sat_num == 2*self.col * (self.row/2 - 1):   # 左下角
             move_direction = np.random.randint(1,4)
+        # 下方边缘的坐标点
+        elif self.sat_num in np.arange((2*self.col * self.row/2) - self.col, (2*self.col * self.row/2) - 1): # 除了右下角的下方边缘（偶数行）
+            move_direction = np.random.choice([1,2,6],1)
+        elif self.sat_num in np.arange(2*self.col * (self.row/2 - 1), 2*self.col * (self.row/2 - 1)+self.col):   # 除了左下角的下方边缘（奇数行）（48被包括进去了，但是没有关系，因为如果self.sat_num=48，就肯定会进入前面的elif()）
+            move_direction = np.random.choice([1,2,3,5,6],1)
         # 不在边缘的坐标点
         else:
             move_direction = np.random.randint(1,7)

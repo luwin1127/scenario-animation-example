@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-# from matplotlib.animation import FuncAnimation
 from PIL import Image
 
 # ===================================== #
@@ -205,7 +204,7 @@ for scenario_num in range(0,animation_num):
     plt.close()
 
 # 保存为gif
-save_gif(images, 'confrontation_scenario_changes.gif', duration=200) # 单位是毫秒 (ms)
+save_gif(images, 'confrontation_scenario_changes.gif', duration=350) # 单位是毫秒 (ms)
 print("--== 画图结束 ==--")
 # ===================================== #
 #                 插入结束               #
