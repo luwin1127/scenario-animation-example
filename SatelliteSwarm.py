@@ -22,15 +22,30 @@ def save_gif(images, filename, duration):
         frames.append(img)
     images[0].save(filename, format='GIF', append_images=frames[1:], save_all=True, duration=duration, loop=0)
 
+# ===================================== #
+#                类对象部分              #
+# ===================================== #
 class SatelliteSwarm:
-    def __init__(self, col, row, drawn_centers_num):
-        self.sat_num = drawn_centers_num
+    def __init__(self, col, row, sat_num, drawn_centers_num):
+        self.sat_num = sat_num
         self.col = col
         self.row = row
+        self.drawn_centers_num = drawn_centers_num
+        self.extract_sat_num()
         self.update_parity()
         self.action = 'none'
 
+    def extract_sat_num(self):
+        # 把该卫星编号从原来的中心坐标编号数组里排除
+        self.other_centers_num = self.drawn_centers_num[self.drawn_centers_num != self.sat_num]
+        self.sat_num_index = np.where(self.drawn_centers_num == self.sat_num)
+
+    def if_move(self):
+        # 判断更新之后的编号是否占用了其他卫星的空间
+        pass
+
     def update_parity(self):
+        # 更新卫星对应行数的奇偶性
         temp = np.floor(self.sat_num / 4) + 1 # 每个六边形编号对应的行数 = 向下取整（编号/列数）+1
         if temp % 2 == 0:   # 判断行数的奇偶性
             self.parity = 'odd'

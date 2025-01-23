@@ -37,13 +37,13 @@ row = 14
 col = 4
 
 # 读取图片
-sat_red_img = Image.open('sat_red.png')
+sat_red_img = Image.open('./confrontation scenario ppt/sat_red.png')
 sat_red_img_arr = np.array(sat_red_img)
-sat_blue_img = Image.open('sat_blue.png')
+sat_blue_img = Image.open('./confrontation scenario ppt/sat_blue.png')
 sat_blue_img_arr = np.array(sat_blue_img)
-sat_up_img = Image.open('sat_up.png')
+sat_up_img = Image.open('./confrontation scenario ppt/sat_up.png')
 sat_up_img_arr = np.array(sat_up_img)
-sat_down_img = Image.open('sat_down.png')
+sat_down_img = Image.open('./confrontation scenario ppt/sat_down.png')
 sat_down_img_arr = np.array(sat_down_img)
 
 # 卫星中心坐标比例
@@ -74,8 +74,8 @@ red_sat_num = drawn_centers_num[0:int(red_sat_NUM[0])]
 blue_sat_num = drawn_centers_num[int(red_sat_NUM[0]):int(red_sat_NUM[0]+blue_sat_NUM[0])]
 
 # 使用列表推导式自动建立 SatelliteSwarm 对象
-red_sats = [SatelliteSwarm.SatelliteSwarm(col, row, num) for num in red_sat_num]
-blue_sats = [SatelliteSwarm.SatelliteSwarm(col, row, num) for num in blue_sat_num]
+red_sats = [SatelliteSwarm.SatelliteSwarm(col, row, num, drawn_centers_num) for num in red_sat_num]
+blue_sats = [SatelliteSwarm.SatelliteSwarm(col, row, num, drawn_centers_num) for num in blue_sat_num]
 
 # 如果需要通过编号访问特定卫星，可以这样做：
 for i, red_sat in enumerate(red_sats):
